@@ -1,0 +1,61 @@
+<?php
+namespace kuaukutsu\struct\related;
+
+/**
+ * Interface StorageInterface
+ * @package kuaukutsu\struct\related
+ */
+interface StorageInterface
+{
+    /**
+     * Type
+     */
+    const TYPE_CONTEXT  = 1 << 0;
+    const TYPE_PARENT   = 1 << 1;
+    const TYPE_CHILD    = 1 << 2;
+
+    /**
+     * Mode
+     */
+    const MODE_HAS_ONE  = 1 << 0;
+    const MODE_HAS_MANY = 1 << 1;
+
+    /**
+     * @param ModelInterface $model
+     * @param int $mode
+     * @return StorageInterface
+     */
+    public function setInstance(ModelInterface $model, int $mode = self::MODE_HAS_MANY): self;
+
+    /**
+     * Model write left, Related write right
+     *
+     * @param RelatedItem $relatedItem
+     * @param int $type
+     * @return StorageInterface
+     */
+    public function attach(RelatedItem $relatedItem, int $type = self::TYPE_CONTEXT): self;
+
+    /**
+     * Delete right keys
+     *
+     * @param RelatedItem $relatedItem
+     * @param int $type
+     * @return StorageInterface
+     */
+    public function detach(RelatedItem $relatedItem, int $type = self::TYPE_CONTEXT): self;
+
+    /**
+     * Delete all right keys
+     *
+     * @param int|null $type
+     * @return mixed
+     */
+    public function delete(?int $type = null);
+
+    /**
+     * @param int $type
+     * @return array
+     */
+    public function getItems(int $type = self::TYPE_CONTEXT): array;
+}
