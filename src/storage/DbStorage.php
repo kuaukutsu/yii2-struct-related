@@ -59,7 +59,7 @@ class DbStorage extends BaseStorage
 
         \Yii::$app->db
             ->createCommand()
-            ->insert(self::tableName(), array_merge(
+            ->insert(static::tableName(), array_merge(
                 self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
                 self::toRelatedKey($relatedItem, $this->rightKeys),
                 ['type' => $type]
@@ -80,7 +80,7 @@ class DbStorage extends BaseStorage
         // left
         \Yii::$app->db
             ->createCommand()
-            ->delete(self::tableName(), array_merge(
+            ->delete(static::tableName(), array_merge(
                 self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
                 self::toRelatedKey($relatedItem, $this->rightKeys),
                 ['type' => $type]
@@ -90,7 +90,7 @@ class DbStorage extends BaseStorage
         // right
         \Yii::$app->db
             ->createCommand()
-            ->delete(self::tableName(), array_merge(
+            ->delete(static::tableName(), array_merge(
                 self::toRelatedKey($relatedItem, $this->leftKeys),
                 self::toRelatedKey($this->model->getRelatedItem(), $this->rightKeys),
                 ['type' => $type]
@@ -115,7 +115,7 @@ class DbStorage extends BaseStorage
         // left
         \Yii::$app->db
             ->createCommand()
-            ->delete(self::tableName(), $condition)
+            ->delete(static::tableName(), $condition)
             ->execute();
 
         $condition = self::toRelatedKey($this->model->getRelatedItem(), $this->rightKeys);
@@ -126,7 +126,7 @@ class DbStorage extends BaseStorage
         // right
         \Yii::$app->db
             ->createCommand()
-            ->delete(self::tableName(), $condition)
+            ->delete(static::tableName(), $condition)
             ->execute();
     }
 
