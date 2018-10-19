@@ -52,10 +52,10 @@ class DbStorage extends BaseStorage
     public function find(?int $type = self::TYPE_CONTEXT): Query
     {
         $query = (new Query())
-            ->from(self::tableName())
+            ->from(static::tableName())
             ->where(['OR',
-                self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
-                self::toRelatedKey($this->model->getRelatedItem(), $this->rightKeys)
+                $this->model->getRelatedItem()->toPrepareKey($this->leftKeys),
+                $this->model->getRelatedItem()->toPrepareKey($this->rightKeys)
             ]);
 
         if ($type) {
@@ -71,7 +71,7 @@ class DbStorage extends BaseStorage
      */
     public function getItems(int $type = self::TYPE_CONTEXT): array
     {
-        return $this->find($type)->all(self::getDb());
+        return $this->find($type)->all(static::getDb());
     }
 
     /**
@@ -88,14 +88,14 @@ class DbStorage extends BaseStorage
         }
 
         // exists revert
-        if (!$this->find($type)->andWhere(self::toRelatedKey($relatedItem, $this->leftKeys))->exists()) {
+        if (!$this->find($type)->andWhere($relatedItem->toPrepareKey($this->leftKeys))->exists()) {
 
             // insert ignore
             DbHelper::insertIgnore(static::tableName(), array_merge(
-                self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
-                self::toRelatedKey($relatedItem, $this->rightKeys),
+                $this->model->getRelatedItem()->toPrepareKey($this->leftKeys),
+                $relatedItem->toPrepareKey($this->rightKeys),
                 ['type' => $type]
-            ), self::getDb())
+            ), static::getDb())
                 ->execute();
         }
 
@@ -111,21 +111,21 @@ class DbStorage extends BaseStorage
     public function detach(RelatedItem $relatedItem, int $type = self::TYPE_CONTEXT): StorageInterface
     {
         // left
-        self::getDb()
+        static::getDb()
             ->createCommand()
             ->delete(static::tableName(), array_merge(
-                self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
-                self::toRelatedKey($relatedItem, $this->rightKeys),
+                $this->model->getRelatedItem()->toPrepareKey($this->leftKeys),
+                $relatedItem->toPrepareKey($this->rightKeys),
                 ['type' => $type]
             ))
             ->execute();
 
         // right
-        self::getDb()
+        static::getDb()
             ->createCommand()
             ->delete(static::tableName(), array_merge(
-                self::toRelatedKey($relatedItem, $this->leftKeys),
-                self::toRelatedKey($this->model->getRelatedItem(), $this->rightKeys),
+                $relatedItem->toPrepareKey($this->leftKeys),
+                $this->model->getRelatedItem()->toPrepareKey($this->rightKeys),
                 ['type' => $type]
             ))
             ->execute();
@@ -140,44 +140,26 @@ class DbStorage extends BaseStorage
      */
     public function delete(?int $type = null)
     {
-        $condition = self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys);
+        $condition = $this->model->getRelatedItem()->toPrepareKey($this->leftKeys);
         if ($type) {
             $condition = array_merge($condition, ['type' => $type]);
         }
 
         // left
-        self::getDb()
+        static::getDb()
             ->createCommand()
             ->delete(static::tableName(), $condition)
             ->execute();
 
-        $condition = self::toRelatedKey($this->model->getRelatedItem(), $this->rightKeys);
+        $condition = $this->model->getRelatedItem()->toPrepareKey($this->rightKeys);
         if ($type) {
             $condition = array_merge($condition, ['type' => $type]);
         }
 
         // right
-        self::getDb()
+        static::getDb()
             ->createCommand()
             ->delete(static::tableName(), $condition)
             ->execute();
-    }
-
-    /**********************
-     * HELPERs
-     *********************/
-
-    /**
-     * @param RelatedItem $relatedItem
-     * @param array $nameKeys
-     * @return array
-     */
-    protected static function toRelatedKey(RelatedItem $relatedItem, array $nameKeys = []): array
-    {
-        if ($nameKeys === []) {
-            return $relatedItem->toArray();
-        }
-
-        return array_combine($nameKeys, $relatedItem->toArray());
     }
 }

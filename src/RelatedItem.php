@@ -19,6 +19,10 @@ class RelatedItem extends BaseObject
      */
     public $key;
 
+    /**********************
+     * HELPERs
+     *********************/
+
     /**
      * @return array
      */
@@ -28,6 +32,19 @@ class RelatedItem extends BaseObject
             $this->id,
             $this->key
         ];
+    }
+
+    /**
+     * @param array $nameKeys
+     * @return array
+     */
+    public function toPrepareKey(array $nameKeys = []): array
+    {
+        if ($nameKeys === []) {
+            return $this->toArray();
+        }
+
+        return array_combine($nameKeys, $this->toArray());
     }
 
     /**
