@@ -1,6 +1,8 @@
 <?php
 namespace kuaukutsu\struct\related;
 
+use yii\db\Query;
+
 /**
  * Interface StorageInterface
  * @package kuaukutsu\struct\related
@@ -52,6 +54,12 @@ interface StorageInterface
      * @return mixed
      */
     public function delete(?int $type = null);
+
+    /**
+     * @param int|null $type
+     * @return Query
+     */
+    public function find(?int $type = self::TYPE_CONTEXT): Query;
 
     /**
      * @param int $type

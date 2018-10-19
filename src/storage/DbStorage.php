@@ -1,6 +1,8 @@
 <?php
 namespace kuaukutsu\struct\related\storage;
 
+use yii\db\Query;
+use kuaukutsu\struct\related\helpers\DbHelper;
 use kuaukutsu\struct\related\RelatedItem;
 use kuaukutsu\struct\related\StorageInterface;
 
@@ -28,6 +30,14 @@ class DbStorage extends BaseStorage
     protected $rightKeys = ['rgt_id', 'rgt_key'];
 
     /**
+     * @return \yii\db\Connection
+     */
+    public static function getDb()
+    {
+        return \Yii::$app->db;
+    }
+
+    /**
      * @return string
      */
     public static function tableName(): string
@@ -36,12 +46,32 @@ class DbStorage extends BaseStorage
     }
 
     /**
+     * @param int|null $type
+     * @return Query
+     */
+    public function find(?int $type = self::TYPE_CONTEXT): Query
+    {
+        $query = (new Query())
+            ->from(self::tableName())
+            ->where(['OR',
+                self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
+                self::toRelatedKey($this->model->getRelatedItem(), $this->rightKeys)
+            ]);
+
+        if ($type) {
+            $query->andWhere(['type' => $type]);
+        }
+
+        return $query;
+    }
+
+    /**
      * @param int $type
      * @return array
      */
     public function getItems(int $type = self::TYPE_CONTEXT): array
     {
-        return [];
+        return $this->find($type)->all(self::getDb());
     }
 
     /**
@@ -57,14 +87,17 @@ class DbStorage extends BaseStorage
             $this->delete($type);
         }
 
-        \Yii::$app->db
-            ->createCommand()
-            ->insert(static::tableName(), array_merge(
+        // exists revert
+        if (!$this->find($type)->andWhere(self::toRelatedKey($relatedItem, $this->leftKeys))->exists()) {
+
+            // insert ignore
+            DbHelper::insertIgnore(static::tableName(), array_merge(
                 self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
                 self::toRelatedKey($relatedItem, $this->rightKeys),
                 ['type' => $type]
-            ))
-            ->execute();
+            ), self::getDb())
+                ->execute();
+        }
 
         return $this;
     }
@@ -78,7 +111,7 @@ class DbStorage extends BaseStorage
     public function detach(RelatedItem $relatedItem, int $type = self::TYPE_CONTEXT): StorageInterface
     {
         // left
-        \Yii::$app->db
+        self::getDb()
             ->createCommand()
             ->delete(static::tableName(), array_merge(
                 self::toRelatedKey($this->model->getRelatedItem(), $this->leftKeys),
@@ -88,7 +121,7 @@ class DbStorage extends BaseStorage
             ->execute();
 
         // right
-        \Yii::$app->db
+        self::getDb()
             ->createCommand()
             ->delete(static::tableName(), array_merge(
                 self::toRelatedKey($relatedItem, $this->leftKeys),
@@ -113,7 +146,7 @@ class DbStorage extends BaseStorage
         }
 
         // left
-        \Yii::$app->db
+        self::getDb()
             ->createCommand()
             ->delete(static::tableName(), $condition)
             ->execute();
@@ -124,7 +157,7 @@ class DbStorage extends BaseStorage
         }
 
         // right
-        \Yii::$app->db
+        self::getDb()
             ->createCommand()
             ->delete(static::tableName(), $condition)
             ->execute();

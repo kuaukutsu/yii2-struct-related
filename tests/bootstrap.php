@@ -1,5 +1,4 @@
 <?php
-
 // ensure we get report on all possible php errors
 error_reporting(-1);
 
@@ -11,6 +10,7 @@ $_SERVER['SCRIPT_FILENAME'] = __FILE__;
 require_once(__DIR__ . '/../vendor/autoload.php');
 require_once(__DIR__ . '/../vendor/yiisoft/yii2/Yii.php');
 
-$config = require(__DIR__ . '/config/main.php');
+$config = require(__DIR__ . '/app/config/main.php');
+
 /** @noinspection PhpUnhandledExceptionInspection */
 $app = new \yii\console\Application($config);
