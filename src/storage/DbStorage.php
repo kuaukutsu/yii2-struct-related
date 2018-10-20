@@ -30,6 +30,16 @@ class DbStorage extends BaseStorage
     protected $rightKeys = ['rgt_id', 'rgt_key'];
 
     /**
+     * @var array
+     */
+    private $leftAttr = ['id', 'key'];
+
+    /**
+     * @var array
+     */
+    private $rightAttr = ['relatedId', 'relatedKey'];
+
+    /**
      * @return \yii\db\Connection
      */
     public static function getDb()
@@ -51,12 +61,26 @@ class DbStorage extends BaseStorage
      */
     public function find(?int $type = self::TYPE_CONTEXT): Query
     {
-        $query = (new Query())
+        $queryLeft = (new Query())
             ->from(static::tableName())
-            ->where(['OR',
-                $this->model->getRelatedItem()->toPrepareKey($this->leftKeys),
-                $this->model->getRelatedItem()->toPrepareKey($this->rightKeys)
-            ]);
+            ->select(array_merge(
+                    array_combine($this->leftAttr, $this->leftKeys),
+                    array_combine($this->rightAttr, $this->rightKeys),
+                    ['type'])
+            )
+            ->where($this->model->getRelatedItem()->toPrepareKey($this->leftKeys));
+
+        $queryRight = (new Query())
+            ->from(static::tableName())
+            ->select(array_merge(
+                    array_combine($this->leftAttr, $this->rightKeys),
+                    array_combine($this->rightAttr, $this->leftKeys),
+                    ['type'])
+            )
+            ->where($this->model->getRelatedItem()->toPrepareKey($this->rightKeys));
+
+        $query = (new Query())
+            ->from(['related' => $queryLeft->union($queryRight)]);
 
         if ($type) {
             $query->andWhere(['type' => $type]);
@@ -88,7 +112,7 @@ class DbStorage extends BaseStorage
         }
 
         // exists revert
-        if (!$this->find($type)->andWhere($relatedItem->toPrepareKey($this->leftKeys))->exists()) {
+        if (!$this->find($type)->andWhere($relatedItem->toPrepareKey($this->leftAttr))->exists()) {
 
             // insert ignore
             DbHelper::insertIgnore(static::tableName(), array_merge(

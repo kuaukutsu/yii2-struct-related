@@ -1,6 +1,8 @@
 <?php
 namespace kuaukutsu\struct\related\tests;
 
+use kuaukutsu\struct\related\helpers\Hydrator;
+use kuaukutsu\struct\related\RelatedDTO;
 use kuaukutsu\struct\related\RelatedItem;
 use kuaukutsu\struct\related\storage\DbStorage;
 use kuaukutsu\struct\related\StorageInterface;
@@ -120,5 +122,40 @@ class DbStorageTest extends \PHPUnit\Framework\TestCase
         $modelA->getRelated()->delete();
 
         $this->assertEquals(0, $modelA->getRelated()->find(null)->count());
+    }
+
+    public function testItems()
+    {
+        $modelA = new BaseModel(['id' => 23232]);
+        $modelB = new BaseModel(['id' => 4523]);
+        $modelC = new BaseModel(['id' => 451]);
+        $modelD = new BaseModel(['id' => 45]);
+
+        $modelA->getRelated()
+            ->attach($modelB->getRelatedItem());
+
+        $modelC->getRelated()
+            ->attach($modelA->getRelatedItem());
+
+        $modelC->getRelated()
+            ->attach($modelD->getRelatedItem());
+
+        $items = $modelA->getRelated()->getItems();
+
+        $this->assertCount(2, $items);
+
+        $dtoHydrator = new Hydrator([
+            'id' => '0/id',
+            'key' => '0/key'
+        ]);
+
+        /** @var RelatedDTO $item */
+        $item = $dtoHydrator->hydrate($items, RelatedDTO::class);
+        $this->assertEquals($modelA->getRelatedItem()->id, $item->getId());
+        $this->assertEquals($modelA->getRelatedItem()->key, $item->getKey());
+
+        $this->assertTrue(in_array($modelB->getRelatedItem()->id, array_column($items, 'relatedId')));
+        $this->assertTrue(in_array($modelC->getRelatedItem()->id, array_column($items, 'relatedId')));
+        $this->assertFalse(in_array($modelD->getRelatedItem()->id, array_column($items, 'relatedId')));
     }
 }

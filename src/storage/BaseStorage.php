@@ -1,6 +1,7 @@
 <?php
 namespace kuaukutsu\struct\related\storage;
 
+use yii\base\BaseObject;
 use kuaukutsu\struct\related\ModelInterface;
 use kuaukutsu\struct\related\StorageInterface;
 
@@ -8,7 +9,7 @@ use kuaukutsu\struct\related\StorageInterface;
  * Class BaseStorage
  * @package kuaukutsu\struct\related
  */
-abstract class BaseStorage implements StorageInterface
+abstract class BaseStorage extends BaseObject implements StorageInterface
 {
     /**
      * @var ModelInterface
