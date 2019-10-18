@@ -1,7 +1,10 @@
 <?php
 namespace kuaukutsu\struct\related\tests\models;
 
+use Yii;
+use yii\base\InvalidConfigException;
 use yii\base\Model;
+use yii\di\NotInstantiableException;
 use kuaukutsu\struct\related\Related;
 use kuaukutsu\struct\related\RelatedItem;
 use kuaukutsu\struct\related\ModelInterface;
@@ -24,14 +27,14 @@ class BaseModel extends Model implements ModelInterface
     protected $related;
 
     /**
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\di\NotInstantiableException
+     * @throws InvalidConfigException
+     * @throws NotInstantiableException
      */
     public function init()
     {
         parent::init();
 
-        $this->related = \Yii::$container->get('structRelated');
+        $this->related = Yii::$container->get('structRelated');
     }
 
     /**
@@ -52,7 +55,7 @@ class BaseModel extends Model implements ModelInterface
     }
 
     /**
-     * @return \kuaukutsu\struct\related\StorageInterface
+     * @return StorageInterface
      */
     public function getRelated(): StorageInterface
     {
@@ -60,7 +63,7 @@ class BaseModel extends Model implements ModelInterface
     }
 
     /**
-     * @return \kuaukutsu\struct\related\StorageInterface
+     * @return StorageInterface
      */
     public function getRelatedParent(): StorageInterface
     {

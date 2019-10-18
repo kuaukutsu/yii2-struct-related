@@ -1,27 +1,32 @@
 <?php
+
+use yii\db\Connection;
+use kuaukutsu\struct\related\StorageInterface;
+use kuaukutsu\struct\related\Related;
+use kuaukutsu\struct\related\storage\DbStorage;
+
 return [
     'id' => 'yii2-struct-related',
     'basePath' => dirname(__DIR__),
-    'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
-    'runtimePath' => dirname(dirname(__DIR__)) . '/runtime',
+    'vendorPath' => dirname(__DIR__, 2) . '/vendor',
+    'runtimePath' => dirname(__DIR__, 2) . '/runtime',
 
     'container' => [
         'definitions' => [
-            'dbStorage' => [
-                'class' => \kuaukutsu\struct\related\storage\DbStorage::class
+            StorageInterface::class => [
+                'class' => DbStorage::class
             ]
         ],
         'singletons' => [
             'structRelated' => [
-                ['class' => \kuaukutsu\struct\related\Related::class],
-                [\yii\di\Instance::of('dbStorage')]
+                'class' => Related::class
             ]
         ],
     ],
 
     'components' => [
         'db' => [
-            'class' => \yii\db\Connection::class,
+            'class' => Connection::class,
             'dsn' => 'sqlite:' . dirname(__DIR__) .'/data/sqllite.db',
         ]
     ]

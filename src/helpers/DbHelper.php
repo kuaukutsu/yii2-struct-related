@@ -1,8 +1,9 @@
 <?php
 namespace kuaukutsu\struct\related\helpers;
 
-use \yii\db\Command;
-use \yii\db\Connection;
+use Yii;
+use yii\db\Command;
+use yii\db\Connection;
 
 /**
  * Class DbHelper
@@ -16,10 +17,10 @@ class DbHelper
      * @param null|Connection $db
      * @return Command
      */
-    public static function insertIgnore(string $table, array $columns, ?Connection $db=null): Command
+    public static function insertIgnore(string $table, array $columns, Connection $db=null): Command
     {
         /** @var Connection $connection */
-        $connection = $db ?? \Yii::$app->db;
+        $connection = $db ?? Yii::$app->db;
 
         $params = [];
         $sql = $connection->getQueryBuilder()->insert($table, $columns, $params);

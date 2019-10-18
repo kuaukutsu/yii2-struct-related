@@ -2,6 +2,9 @@
 namespace kuaukutsu\struct\related\helpers;
 
 use kuaukutsu\struct\related\Related;
+use ReflectionClass;
+use ReflectionException;
+use Yii;
 
 /**
  * Class Hydrator
@@ -26,7 +29,7 @@ class Hydrator
      * Mapping
      * @var array
      */
-    private $map = [];
+    private $map;
 
     /**
      * Hydrator constructor.
@@ -57,8 +60,8 @@ class Hydrator
 
             return $object;
 
-        } catch (\ReflectionException $exception) {
-            \Yii::error($exception->getMessage(), Related::class);
+        } catch (ReflectionException $exception) {
+            Yii::error($exception->getMessage(), Related::class);
         }
 
         return null;
@@ -72,13 +75,13 @@ class Hydrator
 
     /**
      * @param string $className
-     * @return \ReflectionClass
-     * @throws \ReflectionException
+     * @return ReflectionClass
+     * @throws ReflectionException
      */
-    protected function getReflectionClass(string $className)
+    protected function getReflectionClass(string $className): ReflectionClass
     {
         if (!isset($this->reflectionClassMap[$className])) {
-            $this->reflectionClassMap[$className] = new \ReflectionClass($className);
+            $this->reflectionClassMap[$className] = new ReflectionClass($className);
         }
 
         return $this->reflectionClassMap[$className];

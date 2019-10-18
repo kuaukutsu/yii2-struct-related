@@ -1,7 +1,10 @@
 <?php
+
 namespace kuaukutsu\struct\related\storage;
 
+use Yii;
 use yii\base\BaseObject;
+use yii\db\Connection;
 use kuaukutsu\struct\related\ModelInterface;
 use kuaukutsu\struct\related\StorageInterface;
 
@@ -22,6 +25,20 @@ abstract class BaseStorage extends BaseObject implements StorageInterface
     protected $mode = self::MODE_HAS_MANY;
 
     /**
+     * @var Connection
+     */
+    protected $connection;
+
+    /**
+     *
+     */
+    public function init(): void
+    {
+        parent::init();
+        $this->connection = Yii::$app->db;
+    }
+
+    /**
      * @param ModelInterface $model
      * @param int $mode
      * @return BaseStorage
@@ -38,6 +55,6 @@ abstract class BaseStorage extends BaseObject implements StorageInterface
      */
     protected function isModeHasOne(): bool
     {
-        return $this->mode == self::MODE_HAS_ONE;
+        return (int)$this->mode === self::MODE_HAS_ONE;
     }
 }

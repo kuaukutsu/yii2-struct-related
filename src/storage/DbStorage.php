@@ -1,7 +1,10 @@
 <?php
 namespace kuaukutsu\struct\related\storage;
 
+use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\db\Query;
+use yii\di\NotInstantiableException;
 use kuaukutsu\struct\related\helpers\DbHelper;
 use kuaukutsu\struct\related\RelatedItem;
 use kuaukutsu\struct\related\StorageInterface;
@@ -38,14 +41,6 @@ class DbStorage extends BaseStorage
      * @var array
      */
     private $rightAttr = ['relatedId', 'relatedKey'];
-
-    /**
-     * @return \yii\db\Connection
-     */
-    public static function getDb()
-    {
-        return \Yii::$app->db;
-    }
 
     /**
      * @return string
@@ -95,14 +90,16 @@ class DbStorage extends BaseStorage
      */
     public function getItems(int $type = self::TYPE_CONTEXT): array
     {
-        return $this->find($type)->all(static::getDb());
+        return $this->find($type)->all($this->connection);
     }
 
     /**
      * @param RelatedItem $relatedItem
      * @param int $type
      * @return StorageInterface
-     * @throws \yii\db\Exception
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws NotInstantiableException
      */
     public function attach(RelatedItem $relatedItem, int $type = self::TYPE_CONTEXT): StorageInterface
     {
@@ -119,7 +116,7 @@ class DbStorage extends BaseStorage
                 $this->model->getRelatedItem()->toPrepareKey($this->leftKeys),
                 $relatedItem->toPrepareKey($this->rightKeys),
                 ['type' => $type]
-            ), static::getDb())
+            ), $this->connection)
                 ->execute();
         }
 
@@ -130,12 +127,12 @@ class DbStorage extends BaseStorage
      * @param RelatedItem $relatedItem
      * @param int $type
      * @return StorageInterface
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function detach(RelatedItem $relatedItem, int $type = self::TYPE_CONTEXT): StorageInterface
     {
         // left
-        static::getDb()
+        $this->connection
             ->createCommand()
             ->delete(static::tableName(), array_merge(
                 $this->model->getRelatedItem()->toPrepareKey($this->leftKeys),
@@ -145,7 +142,7 @@ class DbStorage extends BaseStorage
             ->execute();
 
         // right
-        static::getDb()
+        $this->connection
             ->createCommand()
             ->delete(static::tableName(), array_merge(
                 $relatedItem->toPrepareKey($this->leftKeys),
@@ -160,7 +157,7 @@ class DbStorage extends BaseStorage
     /**
      * @param int|null $type
      * @return mixed|void
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function delete(?int $type = null)
     {
@@ -170,7 +167,7 @@ class DbStorage extends BaseStorage
         }
 
         // left
-        static::getDb()
+        $this->connection
             ->createCommand()
             ->delete(static::tableName(), $condition)
             ->execute();
@@ -181,7 +178,7 @@ class DbStorage extends BaseStorage
         }
 
         // right
-        static::getDb()
+        $this->connection
             ->createCommand()
             ->delete(static::tableName(), $condition)
             ->execute();

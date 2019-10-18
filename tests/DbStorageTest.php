@@ -1,6 +1,9 @@
 <?php
 namespace kuaukutsu\struct\related\tests;
 
+use PHPUnit\Framework\TestCase;
+use Yii;
+use yii\db\Exception;
 use kuaukutsu\struct\related\helpers\Hydrator;
 use kuaukutsu\struct\related\RelatedDTO;
 use kuaukutsu\struct\related\RelatedItem;
@@ -12,20 +15,20 @@ use kuaukutsu\struct\related\tests\models\BaseModel;
  * Class DbStorageTest
  * @package kuaukutsu\struct\related\tests
  */
-class DbStorageTest extends \PHPUnit\Framework\TestCase
+class DbStorageTest extends TestCase
 {
     /**
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function setUp()
     {
         parent::setUp();
 
         // clear
-        \Yii::$app->db->createCommand('DELETE FROM ' . DbStorage::tableName())->execute();
+        Yii::$app->db->createCommand('DELETE FROM ' . DbStorage::tableName())->execute();
     }
 
-    public function testAttach()
+    public function testAttach(): void
     {
         $modelA = new BaseModel(['id' => 23232]);
         $modelB = new BaseModel(['id' => 45]);
@@ -51,7 +54,7 @@ class DbStorageTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(2, $modelB->getRelated()->find()->count());
     }
 
-    public function testAttachIgnoreUnique()
+    public function testAttachIgnoreUnique(): void
     {
         $modelA = new BaseModel(['id' => 23232]);
         $modelB = new BaseModel(['id' => 45]);
@@ -65,7 +68,7 @@ class DbStorageTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(2, $modelA->getRelated()->find()->count());
     }
 
-    public function testDetach()
+    public function testDetach(): void
     {
         $modelA = new BaseModel(['id' => 23232]);
         $modelB = new BaseModel(['id' => 45]);
@@ -92,7 +95,7 @@ class DbStorageTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(1, $modelA->getRelated()->find()->count());
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $modelA = new BaseModel(['id' => 23232]);
 
@@ -124,7 +127,7 @@ class DbStorageTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0, $modelA->getRelated()->find(null)->count());
     }
 
-    public function testItems()
+    public function testItems(): void
     {
         $modelA = new BaseModel(['id' => 23232]);
         $modelB = new BaseModel(['id' => 4523]);
@@ -154,8 +157,8 @@ class DbStorageTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($modelA->getRelatedItem()->id, $item->getId());
         $this->assertEquals($modelA->getRelatedItem()->key, $item->getKey());
 
-        $this->assertTrue(in_array($modelB->getRelatedItem()->id, array_column($items, 'relatedId')));
-        $this->assertTrue(in_array($modelC->getRelatedItem()->id, array_column($items, 'relatedId')));
-        $this->assertFalse(in_array($modelD->getRelatedItem()->id, array_column($items, 'relatedId')));
+        $this->assertContains($modelB->getRelatedItem()->id, array_column($items, 'relatedId'));
+        $this->assertContains($modelC->getRelatedItem()->id, array_column($items, 'relatedId'));
+        $this->assertNotContains($modelD->getRelatedItem()->id, array_column($items, 'relatedId'));
     }
 }

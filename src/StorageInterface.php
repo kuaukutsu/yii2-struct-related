@@ -12,15 +12,15 @@ interface StorageInterface
     /**
      * Type
      */
-    const TYPE_CONTEXT  = 1 << 0;
-    const TYPE_PARENT   = 1 << 1;
-    const TYPE_CHILD    = 1 << 2;
+    public const TYPE_CONTEXT  = 1;
+    public const TYPE_PARENT   = 1 << 1;
+    public const TYPE_CHILD    = 1 << 2;
 
     /**
      * Mode
      */
-    const MODE_HAS_ONE  = 1 << 0;
-    const MODE_HAS_MANY = 1 << 1;
+    public const MODE_HAS_ONE  = 1;
+    public const MODE_HAS_MANY = 1 << 1;
 
     /**
      * @param ModelInterface $model
